@@ -11,18 +11,19 @@ const app = express();
 app.use(express.json())
 app.use(morgan('dev'))
 app.use(cookieParser())
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({ extended: true }))
 
 
 app.use(cors({
-    origin: ['http://localhost:5173'], 
-    credentials: true
+    origin: "*"
 }));
 
-app.use('/api/v1/user',userRoutes)
-app.use('/api/v1/test',testRoutes)
-app.use('/api/v1',topicRoutes)
+app.use('/api/v1/user', userRoutes)
+app.use('/api/v1/test', testRoutes)
+app.use('/api/v1', topicRoutes)
 
 app.use(errorMiddleware)
-
+app.get("/", (req, res) => {
+    res.send("SkillHub Backend Running ✅");
+});
 export default app;
