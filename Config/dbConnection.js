@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-const URI = process.env.MONGO_URI;
 
 let isConnected = false;
 
@@ -8,7 +7,7 @@ const dbConnection = async () => {
     if (isConnected) return;
 
     try {
-        const db = await mongoose.connect(URI);
+        const db = await mongoose.connect(process.env.MONGO_URI);
         isConnected = db.connections[0].readyState;
         console.log("MongoDB connected");
     } catch (error) {
