@@ -5,7 +5,7 @@ import dbConnection from "./Config/dbConnection.js";
 
 dotenv.config();
 
-dbConnection();
+// dbConnection();
 
 cloudinary.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
