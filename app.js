@@ -17,8 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
-      "https://skillhub-frontend.vercel.app", "*"
+      "https://skillhub-frontend-tawny.vercel.app/",
     ],
     credentials: true,
   })
