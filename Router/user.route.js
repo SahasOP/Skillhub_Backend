@@ -27,8 +27,7 @@ import {
   github,
   hackerrank,
 } from "../utils/codingdata.js";
-import multer from "multer";
-const upload = multer({ dest: "uploads/" });
+import upload from "../middleware/multer.middleware.js";
 const router = Router();
 
 router.post("/login", login);

@@ -211,41 +211,69 @@ export const reset = async (req, res, next) => {
 };
 
 // Robust profile update
+
 export const update = async (req, res, next) => {
     try {
         const { id } = req.params;
+
         const user = await User.findById(id);
         if (!user) return next(new AppError("User not found", 404));
 
-        // Updatable fields
+        // Fields allowed to update
         const fields = [
-            "name", "email", "bio", "github", "linkedin", "prn", "branch", "classroom",
-            "rollNo", "role", "division", "year", "leetcode_username", "codechef_username", "codeforces_username", "github_username"
+            "name", "email", "bio", "github", "linkedin", "prn", "branch",
+            "classroom", "rollNo", "role", "division", "year",
+            "leetcode_username", "codechef_username", "codeforces_username", "github_username"
         ];
-        console.log("res", req.body)
-        fields.forEach(field => {
-            if (req.body[field] !== undefined) user[field] = req.body[field];
+
+        fields.forEach((field) => {
+            if (req.body[field] !== undefined) {
+                user[field] = req.body[field];
+            }
         });
 
-        // Handle avatar image upload if present
+        // ✅ HANDLE AVATAR UPLOAD (Vercel-safe)
         if (req.file) {
-            // Optional: remove old image from cloudinary
+            // Delete old avatar if exists
             if (user.avatar?.public_id) {
-                await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+                await cloudinary.uploader.destroy(user.avatar.public_id);
             }
-            const result = await cloudinary.v2.uploader.upload(req.file.path, { folder: "SKILL" });
-            user.avatar = { public_id: result.public_id, secure_url: result.secure_url };
-            user.profilePic = result.secure_url; // convenient for frontend
+
+            // Upload new avatar using buffer
+            const uploadToCloudinary = () =>
+                new Promise((resolve, reject) => {
+                    cloudinary.uploader.upload_stream(
+                        {
+                            folder: "SKILL",
+                            resource_type: "image",
+                        },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    ).end(req.file.buffer);
+                });
+
+            const result = await uploadToCloudinary();
+
+            user.avatar = {
+                public_id: result.public_id,
+                secure_url: result.secure_url,
+            };
+
+            user.profilePic = result.secure_url;
         }
 
         await user.save();
+
         res.status(200).json({
             success: true,
             message: "User updated successfully",
-            user
+            user,
         });
     } catch (error) {
-        next(new AppError(error.message || error, 500));
+        console.error("Update error:", error);
+        next(new AppError(error.message || "Internal Server Error", 500));
     }
 };
 
