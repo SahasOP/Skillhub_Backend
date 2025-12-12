@@ -1,42 +1,48 @@
 import AppError from "../utils/AppError.js";
-import jwt from 'jsonwebtoken'
-const isLoggedIn = async(req,res,next) =>{
+import jwt from "jsonwebtoken";
+
+export const isLoggedIn = async (req, res, next) => {
     try {
-        const {token} = req.cookies;
-        if(!token){
-            return next (new AppError('User not found',505))
+        const { token } = req.cookies;
+
+        if (!token) {
+            return next(new AppError("Authentication required", 401));
         }
 
-        const userDetails = await jwt.verify(token,'ua066B9lGebj243fy2GFQ1NkMMVRaEMemsrQ7zBrEXE=')
-        
-        req.user = userDetails
-        console.log("user token verified successfully:", req.user);
-        next()
-    } catch (error) {
-        console.log(error)
-        return next (new AppError(error,505))
-    }
-}
-const isTeacher = async(req,res,next)=>{
-    try {
-        const {token}  = req.cookies
-        if(!token){
-            return next(new AppError('User not found',501));
-        }
         const userDetails = jwt.verify(
-            token,'ua066B9lGebj243fy2GFQ1NkMMVRaEMemsrQ7zBrEXE='
-        ) 
-        if (!userDetails.role || userDetails.role !== 'teacher') {
-            return next(new AppError('Access denied: Not a teacher', 403));
-        }
-        req.user = userDetails;
-        next()
+            token,
+            "ua066B9lGebj243fy2GFQ1NkMMVRaEMemsrQ7zBrEXE="
+        );
 
+        req.user = userDetails;
+        next();
     } catch (error) {
-        return next(new AppError(error,404));
+        console.log(error);
+        return next(new AppError("Invalid or expired token", 401));
     }
-}
-export {
-    isLoggedIn,
-    isTeacher
-}
+};
+export const isTeacher = async (req, res, next) => {
+    try {
+        const { token } = req.cookies;
+
+        if (!token) {
+            return next(new AppError("Authentication required", 401));
+        }
+
+        const userDetails = jwt.verify(
+            token,
+            "ua066B9lGebj243fy2GFQ1NkMMVRaEMemsrQ7zBrEXE="
+        );
+
+        if (userDetails.role !== "teacher") {
+            return next(new AppError("Access denied: Not a teacher", 403));
+        }
+
+        req.user = userDetails;
+        next();
+    } catch (error) {
+        return next(new AppError("Invalid or expired token", 401));
+    }
+};
+
+
